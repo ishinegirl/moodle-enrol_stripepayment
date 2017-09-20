@@ -219,7 +219,12 @@ class enrol_stripepayment_plugin extends enrol_plugin {
                     $wwwroot = str_replace("http://", "https://", $CFG->wwwroot);
                 }
                 echo '<div class="mdl-align"><p>'.get_string('paymentrequired').'</p>';
-                echo '<p><b>'.get_string('cost').": $instance->currency $localisedcost".'</b></p>';
+                //EDIT JUSTIN added japanese formatting changes
+                if($instance->currency=='JPY'){
+                    echo '<p><b>受講料: ' . number_format($cost) . '円</b></p>';
+                }else {
+                    echo '<p><b>' . get_string('cost') . ": $instance->currency $localisedcost" . '</b></p>';
+                }
                 echo '<p><a href="'.$wwwroot.'/login/">'.get_string('loginsite').'</a></p>';
                 echo '</div>';
             } else {
