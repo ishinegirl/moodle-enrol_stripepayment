@@ -78,3 +78,10 @@ $string['stripepayment:unenrolself'] = 'Unenrolself stripepayment';
 $string['charge_description1'] = "create customer for email receipt";
 $string['charge_description2'] = 'Charge for Course Enrolment Cost.';
 $string['stripe_sorry'] = "Sorry, you can not use the script that way.";
+$string['termsandconditions']='Terms and conditions';
+$string['termsandconditions_desc']='Optionally upload a PDF file here to use as terms and conditions that you require acceptance of before activiting the enrol button.';
+$string['requireterms']='Require Terms & Cond.';
+$string['requireterms_desc']='If checked the user must accept the terms and conditions before they can purchase access to the course.';
+$string['instructions']='Instructions';
+$string['instructions_desc']='Instructions to be displayed to the user above the payment button on the Moodle course page.';
+

@@ -29,6 +29,9 @@ defined('MOODLE_INTERNAL') || die();
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class enrol_stripepayment_plugin extends enrol_plugin {
+
+	const TERMSANDCONDITIONS_FILEAREA = 'termsandconditions';
+
     /**
      * Lists all currencies available for plugin.
      * @return $currencies
@@ -235,6 +238,9 @@ class enrol_stripepayment_plugin extends enrol_plugin {
                 } else {
                     $message = get_string("paymentrequired");
                 }
+                //'instructions' data is not saved properly, we need to put it in "customtext2" I think
+                //Check here and in edit_form.php JUSTIN 20170825
+                //$message .= '<p>' . $instance->customtext2 .'</p>';
                 $validatezipcode = $this->get_config('validatezipcode');
                 $billingaddress = $this->get_config('billingaddress');
                 include($CFG->dirroot.'/enrol/stripepayment/enrol.html');
@@ -377,4 +383,26 @@ class enrol_stripepayment_plugin extends enrol_plugin {
         $context = context_course::instance($instance->courseid);
         return has_capability('enrol/stripepayment:config', $context);
     }
+    
+    /**
+	 * Returns URL to the stored file via pluginfile.php.
+	 *
+	 * @param string $setting
+	 * @param string $filearea
+	 * @return string protocol full URL of termsandconditions
+	 */
+	function fetch_termsandconditions_url() {
+		global $CFG;
+		$config = get_config('enrol_stripepayment');
+
+		$component = 'enrol_stripepayment';
+		$itemid = 0;
+		$syscontext = context_system::instance();
+		$filearea = self::TERMSANDCONDITIONS_FILEAREA;
+		$filepath = $config->termsandconditions;
+
+		$url = moodle_url::make_file_url("$CFG->wwwroot/pluginfile.php", 					"/$syscontext->id/$component/$filearea/$itemid".$filepath);
+		return $url;
+	}
+    
 }

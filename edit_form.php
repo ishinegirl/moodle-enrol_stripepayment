@@ -74,6 +74,12 @@ class enrol_stripepayment_edit_form extends moodleform {
         $mform->setDefault('maxenrolled', 'customint3');
         $mform->addHelpButton('customint3', 'maxenrolled', 'enrol_stripepayment');
         $mform->setType('customint3', PARAM_INT);
+        
+        $mform->addElement('selectyesno', 'requireterms', get_string('requireterms', 'enrol_stripepayment'));
+        $mform->setDefault('requireterms', $plugin->get_config('requireterms'));
+        
+        $mform->addElement('textarea', 'customtext2', get_string("instructions", "enrol_stripepayment"), 'wrap="virtual" rows="20" cols="50"');
+        $mform->setDefault('customtext2', $plugin->get_config('instructions'));
 
         $mform->addElement('duration', 'enrolperiod', get_string('enrolperiod', 'enrol_stripepayment'),
         array('optional' => true, 'defaultunit' => 86400));

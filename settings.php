@@ -22,6 +22,9 @@
  */
 defined('MOODLE_INTERNAL') || die();
 if ($ADMIN->fulltree) {
+
+require_once($CFG->dirroot . '/enrol/stripepayment/lib.php');
+
     // --- settings ------------------------------------------------------------------------------------------
     $settings->add(new admin_setting_heading('enrol_stripepayment_settings', '', get_string('pluginname_desc', 'enrol_stripepayment')));
     $settings->add(new admin_setting_configtext('enrol_stripepayment/secretkey', get_string('secretkey', 'enrol_stripepayment'),
@@ -50,6 +53,17 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('enrol_stripepayment/billingaddress',
             get_string('billingaddress', 'enrol_stripepayment'),
             get_string('billingaddress_desc', 'enrol_stripepayment'), 0));
+            
+           
+                       
+    //A PDF Terms and Conditions file
+	$name = 'enrol_stripepayment/termsandconditions';
+	$title =get_string('termsandconditions', 'enrol_stripepayment');
+	$description = get_string('termsandconditions_desc', 'enrol_stripepayment');
+	$settings->add(new admin_setting_configstoredfile($name, 
+		$title, $description, 
+		enrol_stripepayment_plugin::TERMSANDCONDITIONS_FILEAREA));        
+                   
     // --- enrol instance defaults ----------------------------------------------------------------------------
     $settings->add(new admin_setting_heading('enrol_stripepayment_defaults',
         get_string('enrolinstancedefaults', 'admin'), get_string('enrolinstancedefaults_desc', 'admin')));
@@ -63,6 +77,20 @@ if ($ADMIN->fulltree) {
     get_string('currency', 'enrol_stripepayment'), '', 'USD', $stripecurrencies));
     $settings->add(new admin_setting_configtext('enrol_stripepayment/maxenrolled',
         get_string('maxenrolled', 'enrol_stripepayment'), get_string('maxenrolled_help', 'enrol_stripepayment'), 0, PARAM_INT));
+    
+    //Instructions
+    $name = 'enrol_stripepayment/instructions';
+	$title =get_string('instructions', 'enrol_stripepayment');
+	$description = get_string('instructions_desc', 'enrol_stripepayment');
+	$settings->add(new admin_setting_configtextarea('enrol_stripepayment/instructions',
+			$title,
+			$description,
+			'',PARAM_RAW)); 
+        
+    $settings->add(new admin_setting_configcheckbox('enrol_stripepayment/requireterms',
+            get_string('requireterms', 'enrol_stripepayment'),
+            get_string('requireterms_desc', 'enrol_stripepayment'), 0));    
+        
     if (!during_initial_install()) {
         $options = get_default_enrol_roles(context_system::instance());
         $student = get_archetype_roles('student');
