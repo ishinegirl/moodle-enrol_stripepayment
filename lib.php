@@ -30,7 +30,11 @@ defined('MOODLE_INTERNAL') || die();
  */
 class enrol_stripepayment_plugin extends enrol_plugin {
 
-	const TERMSANDCONDITIONS_FILEAREA = 'termsandconditions';
+    const TERMSANDCONDITIONS_FILEAREA = 'termsandconditions';
+    const CHECKOUTPIC_FILEAREA = 'checkoutpic';
+    const MAXENROLLED_FIELD = 'customint3';
+    const REQUIRETERMS_FIELD = 'customint4';
+    const INSTRUCTIONS_FIELD = 'customtext2';
 
     /**
      * Lists all currencies available for plugin.
@@ -189,6 +193,37 @@ class enrol_stripepayment_plugin extends enrol_plugin {
         $shortname = format_string($course->shortname, true, array('context' => $context));
         $strloginto = get_string("loginto", "", $shortname);
         $strcourses = get_string("courses");
+
+        //get terms and conditions link
+        $uploadterms = get_config('enrol_stripepayment','termsandconditions');
+        $reqterms = $instance->{self::REQUIRETERMS_FIELD};
+        if($uploadterms && $reqterms){
+            $termslink = $this->fetch_setting_file_url($uploadterms,enrol_stripepayment_plugin::TERMSANDCONDITIONS_FILEAREA);
+            $termsexplanation = get_string('termsexplanation','enrol_stripepayment',$termslink->out());
+            //this will hide the form until the javascript disabled the button (whih is enabled by default)
+            $hideshow='hide';
+
+            //do our javascript function to require terms. We have no props for it, but might in future, so left a placeholder.
+            //ideally we could do whole form in js like this, instead of the weird enrol.html.
+            // But checkout.js does not support AMD (require.js) and we would need to shim. Justin 20170921
+            $opts=array('someprop' => true);
+            $PAGE->requires->js_call_amd("enrol_stripepayment/requireterms", 'init', array($opts));
+
+        }else{
+            $termsexplanation='';
+            $termslink=false;
+            $hideshow='';
+        }
+
+        //get checkout picture link
+        $uploadpic = get_config('enrol_stripepayment','checkoutpic');
+        if($uploadpic){
+            $piclink = $this->fetch_setting_file_url($uploadpic,enrol_stripepayment_plugin::CHECKOUTPIC_FILEAREA);
+        }else{
+            $piclink='';
+        }
+
+
         // Pass $view=true to filter hidden caps if the user cannot see them.
         if ($users = get_users_by_capability($context, 'moodle/course:update', 'u.*', 'u.id ASC',
                                              '', '', '', '', false, true)) {
@@ -238,14 +273,12 @@ class enrol_stripepayment_plugin extends enrol_plugin {
                 $usercity        = $USER->city;
                 $useremail       = $USER->email;
                 $instancename    = $this->get_instance_name($instance);
-                if (!empty($instance->customtext1)) {
-                    $message = format_string($instance->customtext1);
+                if (!empty($instance->{self::INSTRUCTIONS_FIELD})) {
+                    $instructions = format_string($instance->{self::INSTRUCTIONS_FIELD});
                 } else {
-                    $message = get_string("paymentrequired");
+                    $instructions = get_string("paymentrequired");
                 }
-                //'instructions' data is not saved properly, we need to put it in "customtext2" I think
-                //Check here and in edit_form.php JUSTIN 20170825
-                //$message .= '<p>' . $instance->customtext2 .'</p>';
+
                 $validatezipcode = $this->get_config('validatezipcode');
                 $billingaddress = $this->get_config('billingaddress');
                 include($CFG->dirroot.'/enrol/stripepayment/enrol.html');
@@ -253,12 +286,34 @@ class enrol_stripepayment_plugin extends enrol_plugin {
         }
         return $OUTPUT->box(ob_get_clean());
     }
+
+    /**
+     * Returns URL to the stored file via pluginfile.php.
+     *
+     *
+     *
+     * @param string $filepath
+     * @param string $filearea
+     * @return string protocol relative URL or null if not present
+     */
+    public function fetch_setting_file_url($filepath, $filearea) {
+        global $CFG;
+
+        $component = 'enrol_stripepayment';
+        $itemid = 0;
+        $syscontext = \context_system::instance();
+        $url = \moodle_url::make_file_url("$CFG->wwwroot/pluginfile.php", "/$syscontext->id/$component/$filearea/$itemid".$filepath);
+        return $url;
+    }
+
+
+
     public function can_stripepayment_enrol(stdClass $instance) {
         global $CFG, $DB, $OUTPUT, $USER;
-        if ($instance->customint3 > 0) {
+        if ($instance->{self::MAXENROLLED_FIELD} > 0) {
             // Max enrol limit specified.
             $count = $DB->count_records('user_enrolments', array('enrolid' => $instance->id));
-            if ($count >= $instance->customint3) {
+            if ($count >= $instance->{self::MAXENROLLED_FIELD}) {
                 // Bad luck, no more stripepayment enrolments here.
                 return false;
             }
@@ -388,26 +443,31 @@ class enrol_stripepayment_plugin extends enrol_plugin {
         $context = context_course::instance($instance->courseid);
         return has_capability('enrol/stripepayment:config', $context);
     }
-    
-    /**
-	 * Returns URL to the stored file via pluginfile.php.
-	 *
-	 * @param string $setting
-	 * @param string $filearea
-	 * @return string protocol full URL of termsandconditions
-	 */
-	function fetch_termsandconditions_url() {
-		global $CFG;
-		$config = get_config('enrol_stripepayment');
+}//end of class
 
-		$component = 'enrol_stripepayment';
-		$itemid = 0;
-		$syscontext = context_system::instance();
-		$filearea = self::TERMSANDCONDITIONS_FILEAREA;
-		$filepath = $config->termsandconditions;
+function enrol_stripepayment_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = array()) {
 
-		$url = moodle_url::make_file_url("$CFG->wwwroot/pluginfile.php", 					"/$syscontext->id/$component/$filearea/$itemid".$filepath);
-		return $url;
-	}
-    
+        if($context->contextlevel == CONTEXT_SYSTEM){
+            $component = 'enrol_stripepayment';
+            $revision = array_shift($args);
+            if ($revision < 0) {
+                $lifetime = 0;
+            } else {
+                $lifetime = 60*60*24*60;
+            }
+
+            $fs = get_file_storage();
+            $relativepath = implode('/', $args);
+
+            $fullpath = "/{$context->id}/{$component}/{$filearea}/0/{$relativepath}";
+            $fullpath = rtrim($fullpath, '/');
+            if ($file = $fs->get_file_by_hash(sha1($fullpath))) {
+                send_stored_file($file, $lifetime, 0, $forcedownload, $options);
+                return true;
+            } else {
+                send_file_not_found();
+            }
+        }
+    send_file_not_found();
 }
+

@@ -62,8 +62,16 @@ require_once($CFG->dirroot . '/enrol/stripepayment/lib.php');
 	$description = get_string('termsandconditions_desc', 'enrol_stripepayment');
 	$settings->add(new admin_setting_configstoredfile($name, 
 		$title, $description, 
-		enrol_stripepayment_plugin::TERMSANDCONDITIONS_FILEAREA));        
-                   
+		enrol_stripepayment_plugin::TERMSANDCONDITIONS_FILEAREA));
+
+    //A payment page image
+    $name = 'enrol_stripepayment/checkoutpic';
+    $title =get_string('checkoutpic', 'enrol_stripepayment');
+    $description = get_string('checkoutpic_desc', 'enrol_stripepayment');
+    $settings->add(new admin_setting_configstoredfile($name,
+        $title, $description,
+        enrol_stripepayment_plugin::CHECKOUTPIC_FILEAREA));
+
     // --- enrol instance defaults ----------------------------------------------------------------------------
     $settings->add(new admin_setting_heading('enrol_stripepayment_defaults',
         get_string('enrolinstancedefaults', 'admin'), get_string('enrolinstancedefaults_desc', 'admin')));

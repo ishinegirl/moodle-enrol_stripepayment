@@ -1,11 +1,20 @@
 <div class="mdl-align">
 <h3><?php echo $instancename; ?></h3>
-<p><?php echo $message; ?></p>
     <!-- EDIT JUSTIN added japanese formatting changes -->
 <p><b>受講料: <?php echo number_format($cost) ?>円</b></p>
-<!-- <p><b><?php echo get_string("cost").": {$instance->currency} {$localisedcost}"; ?></b></p> -->
 
-<form action="<?php echo "$CFG->wwwroot/enrol/stripepayment/charge.php"?>" method="post">
+    <p class="enrol_stripepayment_instructions"><?php echo $instructions; ?></p>
+
+    <!-- agree terms checkbox -->
+    <?php if($termslink){ ?>
+    <input type="checkbox" name="checkbox" value="check" class="enrol_stripepayment_termscheck" />
+    <span class="enrol_stripepayment_termsreq"><?php echo $termsexplanation ?></span>
+    </span>
+
+    <?php } ?>
+
+
+<form class="enrol_stripepayment_form <?php p($hideshow) ?>" action="<?php echo "$CFG->wwwroot/enrol/stripepayment/charge.php"?>" method="post">
 
 <input type="hidden" name="cmd" value="_xclick" />
 <input type="hidden" name="charset" value="utf-8" />
@@ -31,18 +40,16 @@
 <script
     src="https://checkout.stripe.com/checkout.js" class="stripe-button";
     data-key="<?php echo $publishablekey; ?>";
-    data-image="";
+    data-image="<?php echo $piclink; ?>";
     data-locale="ja";
     data-name="<?php p($coursefullname) ?>";
-    /* JUSTIN: added email datalabel for button and altered description for japanese formatting */
     data-email="<?php p($USER->email)?>";
     data-label="支払い画面へ";
     data-description="<?php p('受講料: ' . number_format($cost) . '円')?>";
     data-metadata="6";
     data-currency="<?php p($instance->currency) ?>";
-    /* JUSTIN: removed * 100 multiplier */
     data-amount="<?php p($cost) ?>";
-    data-data-zip-code="<?php p($validatezipcode) ?>";
+    data-zip-code="<?php p($validatezipcode) ?>";
     data-billing-address="<?php p($billingaddress) ?>";
 >
 </script>

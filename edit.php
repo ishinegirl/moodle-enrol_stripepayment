@@ -75,6 +75,8 @@ if ($mform->is_cancelled()) {
         $instance->currency       = $data->currency;
         $instance->roleid         = $data->roleid;
         $instance->customint3     = $data->customint3;
+        $instance->{enrol_stripepayment_plugin::REQUIRETERMS_FIELD}     = $data->{enrol_stripepayment_plugin::REQUIRETERMS_FIELD};
+        $instance->{enrol_stripepayment_plugin::INSTRUCTIONS_FIELD}     = $data->{enrol_stripepayment_plugin::INSTRUCTIONS_FIELD};
         $instance->enrolperiod    = $data->enrolperiod;
         $instance->enrolstartdate = $data->enrolstartdate;
         $instance->enrolenddate   = $data->enrolenddate;
