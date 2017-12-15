@@ -129,6 +129,12 @@ $cost = format_float($cost, 2, false);
 try {
 
     require_once('Stripe/lib/Stripe.php');
+    //added by Justin to deal with issues with JPY being multiplied by 100
+    if($plugin->currency=='JPY'){
+        $multiple = 1;
+    }else{
+        $multiple = 100;
+    }
 
     Stripe::setApiKey($plugin->get_config('secretkey'));
     $charge1 = Stripe_Customer::create(array(
@@ -136,7 +142,7 @@ try {
         "description" => get_string('charge_description1', 'enrol_stripepayment')
     ));
     $charge = Stripe_Charge::create(array(
-      "amount" => $cost * 100,
+      "amount" => $cost * $multiple,
       "currency" => $plugininstance->currency,
       "card" => required_param('stripeToken', PARAM_RAW),
       "description" => get_string('charge_description2', 'enrol_stripepayment'),
@@ -144,7 +150,7 @@ try {
     ));
     // Send the file, this line will be reached if no error was thrown above.
     $data->txn_id = $charge->balance_transaction;
-    $data->tax = $charge->amount / 100;
+    $data->tax = $charge->amount / $multiple;
     $data->memo = $charge->id;
     $data->payment_status = $charge->status;
     $data->pending_reason = $charge->failure_message;
