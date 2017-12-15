@@ -130,7 +130,7 @@ try {
 
     require_once('Stripe/lib/Stripe.php');
     //added by Justin to deal with issues with JPY being multiplied by 100
-    if($plugin->currency=='JPY'){
+    if($plugininstance->currency=='JPY'){
         $multiple = 1;
     }else{
         $multiple = 100;
